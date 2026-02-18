@@ -10,8 +10,8 @@ dashboard and MCP integration.
 
 Clone this repo and run:
 
-    git clone https://github.com/r-ms/ai-lens.git
-    cd ai-lens
+    git clone https://github.com/r-ms/ai-lens-public.git
+    cd ai-lens-public
     docker compose up -d
 
 This starts three containers:
