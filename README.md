@@ -66,10 +66,12 @@ dashboard within seconds.
 | `--yes`, `-y` | Non-interactive mode, accept all defaults |
 | `--no-mcp` | Skip MCP server registration |
 | `--mcp-scope SCOPE` | MCP scope: `user` (default), `local`, or `project` |
+| `--projects LIST` | Comma-separated project paths to monitor (default: all) |
 
 ### Other commands
 
     npx ai-lens remove     # Remove hooks, client files, and MCP config
+    npx ai-lens status     # Run health checks and generate a diagnostic report
     npx ai-lens version    # Show installed version
 
 ### Environment variables
@@ -81,6 +83,14 @@ Copy `.env.example` to `.env` and adjust as needed:
 | `PORT` | `3000` | Server port |
 | `POSTGRES_PASSWORD` | `ailens` | PostgreSQL password |
 | `ANALYSIS_INTERVAL` | `3600` | Seconds between analysis runs |
+| `AI_LENS_ADMIN_SECRET` | _(none)_ | Admin secret for auth token management |
+| `AUTH0_DOMAIN` | _(none)_ | Auth0 tenant domain |
+| `AUTH0_CLIENT_ID` | _(none)_ | Auth0 SPA client ID |
+| `AUTH0_AUDIENCE` | _(none)_ | Auth0 API audience identifier |
+| `AUTH0_ALLOWED_DOMAIN` | _(none)_ | Restrict login to a specific email domain |
+| `AUTH0_CLI_CLIENT_ID` | _(none)_ | Auth0 Native app client ID for device code flow |
+| `MCP_SERVER_URL` | `http://localhost:3000` | Public server URL for MCP OAuth callbacks |
+| `OPENAI_API_KEY` | _(none)_ | OpenAI API key for session analysis |
 
 ## MCP Tools
 
@@ -89,12 +99,17 @@ inside Claude Code and Cursor:
 
 | Tool | Description |
 |------|-------------|
-| `who_am_i` | Identify yourself — returns your developer profile |
-| `get_overview` | Organization-wide KPIs and trends |
-| `get_developer` | Developer profile with session stats and MCP usage |
-| `get_chain` | Session chain timeline with events |
-| `get_chain_analysis` | AI-generated session analysis |
-| `search` | Natural language search across all sessions |
+| `who_am_i` | Identify yourself by git email — returns your developer profile and team(s) |
+| `get_overview` | Organization-wide KPIs: active developers, adoption rate, AI hours, MCP and skill distribution |
+| `list_teams` | List all teams with member counts, adoption rate, and AI hours |
+| `get_team` | Team detail: KPIs, members, tasks, activity trend, MCP and skill distribution |
+| `get_team_analysis` | AI-generated team analysis: achievements, recurring problems, recommendations |
+| `get_developer` | Developer profile: sessions, AI hours, tasks, MCP and skill usage, team comparison |
+| `get_mcp_distribution` | MCP server usage across the organization |
+| `get_chain` | Session chain with compact event timeline, plan mode segments, and timing |
+| `get_events` | Full event data for specific event IDs |
+| `get_chain_analysis` | AI-generated chain analysis: tasks, problems, tool errors, unanswered questions |
+| `search` | Natural language search across sessions, tasks, and projects |
 
 ## How It Works
 
