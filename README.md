@@ -24,6 +24,12 @@ This starts three containers:
 
 Open the dashboard: **http://localhost:3000**
 
+If port 3000 is already in use, set `PORT` in a `.env` file before starting:
+
+    echo "PORT=3001" > .env
+    docker compose up -d
+    npx ai-lens init --server http://localhost:3001 --yes
+
 ### 2. Connect your AI tools
 
     npx ai-lens init
@@ -38,16 +44,36 @@ The setup wizard will:
 ### 3. Enable session analysis (optional)
 
 The analyzer container uses Claude Code CLI to generate AI-powered insights for
-your coding sessions. To enable it, authenticate Claude inside the container:
+your coding sessions. Authenticate Claude inside the container using one of two
+methods:
 
-    docker exec -it ai-lens-analyzer-1 claude login
+**Option A — interactive browser login:**
+
+    docker compose run --rm -it analyzer claude auth login
 
 This opens a browser-based login flow. Once authenticated, credentials are stored
 in a persistent Docker volume (`claude_home`) and survive container restarts.
 
+**Option B — copy credentials from your host** (faster if Claude Code is already
+authenticated on your machine):
+
+    docker run --rm \
+      -v ai-lens-public_claude_home:/target \
+      -v ~/.claude:/source:ro \
+      alpine sh -c "
+        mkdir -p /target/.claude &&
+        cp /source/.credentials.json /target/.claude/ &&
+        chown -R 1001:1001 /target/.claude
+      "
+
 The analyzer runs every hour by default (configurable via `ANALYSIS_INTERVAL`).
 Without authentication, the analyzer container starts but analysis will fail —
 everything else works normally.
+
+To trigger analysis immediately (bypassing the 5-hour settling window that waits
+for a session to go idle before analyzing it):
+
+    docker compose run --rm analyzer node /app/scripts/analyze-sessions.js --min-age 0
 
 ### 4. You're done
 
@@ -90,7 +116,7 @@ Copy `.env.example` to `.env` and adjust as needed:
 | `AUTH0_ALLOWED_DOMAIN` | _(none)_ | Restrict login to a specific email domain |
 | `AUTH0_CLI_CLIENT_ID` | _(none)_ | Auth0 Native app client ID for device code flow |
 | `MCP_SERVER_URL` | `http://localhost:3000` | Public server URL for MCP OAuth callbacks |
-| `OPENAI_API_KEY` | _(none)_ | OpenAI API key for session analysis |
+| `OPENAI_API_KEY` | _(none)_ | OpenAI API key for embedding-based vector search (FAISS); text search works without it |
 
 ## MCP Tools
 
