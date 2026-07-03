@@ -6,13 +6,31 @@ services:
       - "${PORT:-3000}:3000"
     environment:
       - DATABASE_URL=postgresql://ailens:${POSTGRES_PASSWORD:-ailens}@postgres:5432/ailens
+      # Optional — semantic vector search (text search works without it)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      # Optional — teams shown in the dashboard (JSON, see README)
+      - TEAMS_CONFIG=${TEAMS_CONFIG:-}
+      # Optional — Auth0 SSO for team deployments (see README)
+      - AUTH0_DOMAIN=${AUTH0_DOMAIN:-}
+      - AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID:-}
+      - AUTH0_CLI_CLIENT_ID=${AUTH0_CLI_CLIENT_ID:-}
+      - AUTH0_AUDIENCE=${AUTH0_AUDIENCE:-}
+      - AUTH0_ALLOWED_DOMAIN=${AUTH0_ALLOWED_DOMAIN:-}
+      - AI_LENS_ADMIN_SECRET=${AI_LENS_ADMIN_SECRET:-}
+      - MCP_SERVER_URL=${MCP_SERVER_URL:-}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-}
     depends_on:
       postgres:
         condition: service_healthy
 
   postgres:
-    image: postgres:16-alpine
+    # pgvector is REQUIRED — the server creates the `vector` extension on first
+    # start (semantic search embeddings). Plain postgres:16-alpine will fail
+    # migrations. Upgrading an older install that used postgres:16-alpine?
+    # See "Upgrading" in the README (dump/restore — the base image changed).
+    image: pgvector/pgvector:pg16
     restart: unless-stopped
+    shm_size: 256m
     environment:
       POSTGRES_DB: ailens
       POSTGRES_USER: ailens
@@ -31,6 +49,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://ailens:${POSTGRES_PASSWORD:-ailens}@postgres:5432/ailens
       - ANALYSIS_INTERVAL=${ANALYSIS_INTERVAL:-3600}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - TEAMS_CONFIG=${TEAMS_CONFIG:-}
     volumes:
       - claude_home:/home/claude
     depends_on:
